@@ -2,6 +2,7 @@
   "dependencies": {
     "framer-motion": "^10.16.4",
     "react-icons": "^4.11.0",
+    "react-loader-spinner": "^5.4.5",
     "react-router-dom": "^6.18.0",
     "sass": "^1.69.5"
   }

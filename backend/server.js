@@ -43,6 +43,17 @@ app.get('/api/getlinks', (req,res)=> {
         }
     })
 })
+app.get('/api/checkreferral', (req, res) => {
+    const referralToken = req.query.referralToken
+    db2.query('SELECT COUNT(referral_link) as isValid FROM users WHERE referral_link = ?',
+    [referralToken], (err, result) => {
+        if (err) {
+            console.log(err)
+        } else {
+            res.send(result)
+        }
+    })
+})
 app.get('/api/checkexists', (req,res)=> {
     const phone = req.query.phone
     var numb = phone.match(/\d/g);
@@ -82,6 +93,50 @@ app.post('/api/createuser', (req, res) => {
             res.json({referral: referral});
         }
     })
+})
+app.get('/api/getreferralcount', (req, res) => {
+    const phone = req.query.phone
+    var numb = phone.match(/\d/g);
+    numb = numb.join("");
+    db2.query(`SELECT COUNT(DISTINCT recipient_phone) as count FROM referrals WHERE owner_phone = ?`, [numb], (err, result) => {
+        if (err) {
+            console.log(err)
+        } else {
+            res.send(result)
+        }
+    })
+})
+app.post('/api/countreferral', (req, res) => {
+    const referralid = req.body.referral
+    const recipientPhone = req.body.recipientPhone
+    var recipientNumb = recipientPhone.match(/\d/g);
+    recipientNumb = recipientNumb.join("");
+    // might wanna set `confirmed` here, after verifying phone thru twilio
+    const sql = `INSERT INTO referrals (referralid, owner_phone, recipient_phone) VALUES (?, ?, ?)`
+
+    db2.query(`SELECT DISTINCT phone as owner_phone FROM users WHERE referral_link = ?`, [referralid], (err, result) => {
+        if (err) {
+            console.log(err)
+        } else {
+            if (result[0].owner_phone) {
+                const ownerPhone = result[0].owner_phone
+                var ownerNumb = ownerPhone.match(/\d/g);
+                ownerNumb = numb.join("");   
+                db2.query(sql, [referralid, ownerNumb, recipientNumb], (err, result) => {
+                    if(err) {
+                        console.log(err)
+                    } else {
+                        // just return the same referral link for now
+                        res.json({referral: referralid});
+                    }
+                })
+            } else {
+                res.json({referral:false})
+            }
+          
+        }
+    })
+
 })
 
 const port = process.env.PORT || 3000;

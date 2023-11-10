@@ -22,8 +22,6 @@ const renderIcons = () => (
         <div className='carousel-icon-container noservice-icon'>
             REFER • A • FREIND
         </div>
-
-
     </>
 )
 
@@ -32,14 +30,24 @@ const Carousel = () => {
    // const iconsRef = useRef(null)
 
     useEffect(() => {
+        let isMounted = true; // flag to track component's mount state
         const loopAnimation = async () => {
             // animate to half the width to show the second set
-            await controls.start({ x: '-50%', transition: { duration: 30, ease: "linear" } });
-            // instantly resets to the start
-            controls.set({ x: '0%' });
-            loopAnimation();
+            if (isMounted) {
+                await controls.start({ x: '-50%', transition: { duration: 30, ease: "linear" } });
+                // instantly resets to the start
+                if (isMounted) {
+                    // instantly resets to the start
+                    await controls.set({ x: '0%' });
+                    loopAnimation();
+                }
+            }
         };
         loopAnimation();
+        // Cleanup function to set isMounted to false when the component unmounts
+        return () => {
+            isMounted = false;
+        };
     }, [controls]);
 
     return (

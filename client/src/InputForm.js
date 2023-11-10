@@ -2,17 +2,35 @@ import React, {useState, useEffect, useRef} from 'react';
 import './App.scss'
 import {AnimatePresence, motion} from 'framer-motion'
 import {GoArrowRight} from 'react-icons/go'
+import {BiCopy} from 'react-icons/bi'
+import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from 'uuid';
-const InputForm = ({referralLink, onRegisterPhone, onHandleSubmit, onHandleClipboard}) => {
+const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandleSubmit, onHandleClipboard}) => {
+    const location = useLocation()
     const [phone, setPhone] = useState('')
+    const [referralCount, setReferralCount] = useState(count?count:0)
   //  const [referral, setReferral] = useState(referralLink)
   //  const [accessLink, setAccessLink] = useState(uuidv4())
     const [validNumber, setValidNumber] = useState(false)
+    const [hasAccess, setHasAccess] = useState(false)
+    function handleTest() {
+        const queryParams = new URLSearchParams(location.search);
+        const token = queryParams.get('token');
+        console.log(token)
+    }
+    function getReferralToken() {
+        const queryParams = new URLSearchParams(location.search);
+        const token = queryParams.get('token');
+        return (token !== null && token.length > 0);
+    }
     const validatePhone = (val) => {
         setPhone(val)
-        const regex = /^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$/
+        const regex = /^\s*(?:\+?(\d{1,3})[-. (]*)?(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$/
         setValidNumber(regex.test(val.trim()))
-      }
+    }
+    useEffect(()=> {
+        setReferralCount(count)
+    }, [count])
     return (
         <form id="phone-form">
             <div className='input-form-container '>
@@ -24,9 +42,9 @@ const InputForm = ({referralLink, onRegisterPhone, onHandleSubmit, onHandleClipb
                         </p>
                         <div className='input-wrapper-alt'>
                             <input className='input-content'
-                         //   type="tel"
+                           // type="tel"
                             name="phone"
-                            pattern="^(\+\d{1,2}\s)?\(?\d{3}\)?[\s.-]\d{3}[\s.-]\d{4}$"
+                          //  pattern="^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$"
                             value={phone}
                             onChange={(e)=>validatePhone(e.target.value)}
                             placeholder='+ 1' required/>
@@ -49,17 +67,32 @@ const InputForm = ({referralLink, onRegisterPhone, onHandleSubmit, onHandleClipb
                             name="symbol">
                                 {`${"snowhouse.com/let-me-in"}`}
                             </span>
+                            <span 
+                            onClick={() => onHandleClipboard("referral")}
+                            className='copy-icon-container'>
+                            <BiCopy 
+                            className='copy-icon'
+                            style={{color:!isRegistered?"#404040":"#ddd"}}/>
+                            </span>
+                       
                         </span>
                     </div>
                     <div className='input-container'>
                         <p className='input-header-text'>
-                            Your Access Link
+                            {`Your Access Link ${isRegistered&&referralCount<2?`• ${2-referralCount} more referral${referralCount<1?'s':''}`
+                            :""}`}
                         </p>
                         <span className='input-wrapper'>
-                            <span className='input-content-alt'
+                            <span className='input-content-access'
                             onClick={() => onHandleClipboard("access")}
                             name="symbol">
                                 {`peakingduckgroup.com/snow-house`}
+                            </span>
+                            <span 
+                            className='access-arrow-icon-container'>
+                                <GoArrowRight 
+                                 style={{color:!hasAccess?"#404040":"#ddd"}}
+                                 className="access-arrow-icon"/>
                             </span>
                         </span>
                     </div>
@@ -68,7 +101,7 @@ const InputForm = ({referralLink, onRegisterPhone, onHandleSubmit, onHandleClipb
                     <span className='submit-button' 
                     role='button'
                     type="submit"
-                    onClick={()=>(validNumber)?onHandleSubmit(phone):console.log("not valid")}
+                    onClick={()=>handleTest()}
                     >
                         <p className='submit-text'>
                             Debug
