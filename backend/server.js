@@ -138,6 +138,18 @@ app.post('/api/countreferral', (req, res) => {
     })
 
 })
+app.post('/api/send-sms', (req, res) => {
+    const to = req.body.phone
+    const code = uuidv4().substring(0,4)
+    const from = "8445900274";
+    const body = `Reply with YES ${code}`;
+
+    client.messages
+      .create({ body, from, to })
+      .then(message => res.send({ message: 'SMS sent', sid: message.sid }))
+      .catch(error => res.status(500).send({ error }));
+});
+
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on port ${port}`))

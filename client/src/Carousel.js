@@ -2,7 +2,7 @@ import React, {useState, useEffect, useRef} from 'react';
 import { motion, useAnimation } from 'framer-motion';
 
 
-const renderIcons = () => (
+const renderIcons = (screenWidth) => (
     <>
         <div className='carousel-icon-container noservice-icon'>
             PEAKING DUCK
@@ -16,18 +16,34 @@ const renderIcons = () => (
         <div className='carousel-icon-container noservice-icon'>
             REFER • A • FREIND
         </div>
+        {(screenWidth>767)&&
         <div className='carousel-icon-container noservice-icon'>
             PEAKING DUCK
         </div>
+        }
+        {(screenWidth>767)&&
         <div className='carousel-icon-container noservice-icon'>
             REFER • A • FREIND
         </div>
+        }
     </>
 )
 
 const Carousel = () => {
     const controls = useAnimation();
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth)
+    const [screenHeight, setScreenHeight] = useState(window.innerHeight)
    // const iconsRef = useRef(null)
+   useEffect(() => {
+    const updateDimensions = () => {
+      setScreenWidth(window.innerWidth);
+      setScreenHeight(window.innerHeight);
+    };
+    window.addEventListener('resize', updateDimensions);
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+    };
+  }, []);
 
     useEffect(() => {
         let isMounted = true; // flag to track component's mount state
@@ -56,8 +72,8 @@ const Carousel = () => {
             initial={{ x: 0 }}
             animate={controls}
             className='carousel-content-container'>
-              {renderIcons()}
-              {renderIcons()}
+              {renderIcons(screenWidth)}
+              {renderIcons(screenWidth)}
             </motion.div>
         </div>
     );

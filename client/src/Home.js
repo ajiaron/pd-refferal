@@ -70,6 +70,7 @@ function Home() {
         `https://peakingduck-referral.netlify.app/referral?token=${res.data[0].referral}`)
       } else {
         registerUser(phone)
+        setReferralCount(0)
       }
     } catch(e) {
       setStatus("error")
@@ -86,7 +87,7 @@ function Home() {
       if (res.data) {
         setReferralLink((env === "development")?
             `http://localhost:3000/referral?token=${res.data.referral}`:
-            `https://peakingduck-referral.nerlify.app/referral?token=${res.data.referral}`)
+            `https://peakingduck-referral.netlify.app/referral?token=${res.data.referral}`)
         setStatus("success")
         setIsRegistered(true)
         console.log(res.data)
@@ -94,6 +95,23 @@ function Home() {
     } catch(e) {
         setStatus("error")
         console.log(e)
+    }
+  }
+
+  const testSMS = async(phone) => {
+    if (isRegistered) {
+      setStatus("loading")
+      try {
+        const res = await axios.post(`${connection}/api/send-sms`, {phone:phone})
+        if (res.data) {
+          console.log(res.data)
+        } else {
+          console.log("sms failed")
+        }
+      } catch(e) {
+        console.log(e)
+        setStatus("error")
+      }
     }
   }
   useEffect(()=> {  // for loading status bar
@@ -108,15 +126,28 @@ function Home() {
     }
   }, [status])
   return (
-    <div className="main-content">
-      <Carousel/>
+    <motion.div className="main-content"
+    initial={{x:0}} 
+    animate={{x:0}} 
+    transition={{
+        type: "spring",
+        stiffness:160,
+        damping:40,
+        duration:.5,
+      }}
+    exit={{x:-window.innerWidth, opacity:0,
+    transition:{
+        type: "tween",
+        duration:.6
+      }
+    }}>
       <div className='main-content-container'>
         <InputForm 
           referralLink={referralLink}
           count={referralCount}
           isRegistered={isRegistered}
           onRegisterPhone={(val)=>checkRegistered(val)}
-          onHandleSubmit={(data)=>handleForm(data)}
+          onHandleSubmit={(phone)=>testSMS(phone)}
           onHandleClipboard={(type)=>handleClipboard(type)}
         />
       </div>
@@ -126,7 +157,7 @@ function Home() {
           <Popup status={status} onClose={()=>closePopup()}/>
         }
       </AnimatePresence>
-    </div>
+    </motion.div>
   );
 }
 

@@ -7,6 +7,7 @@ import Posh from './Posh';
 import Referral from './Referral';
 import { Oval } from 'react-loader-spinner'
 import axios from 'axios';
+import Carousel from './Carousel';
 
 const validateReferral = async(token, callback) => {
     const connection = process.env.REACT_APP_API_URL
@@ -49,7 +50,9 @@ function ProtectedRoute({ children, type }) {
                 setIsLoading(false)
             });
         } else if (type === "access") {
-            tokenIsValid = validateAccess(token);
+            tokenIsValid = true;
+            setIsLoading(false)
+           // tokenIsValid = validateAccess(token);
         }
         setIsValid(tokenIsValid); // 2nd check for redundancy
        // setIsLoading(false);
@@ -86,6 +89,7 @@ function AnimatedRoutes() {
     const location = useLocation()
     return (
         <AnimatePresence>
+            <Carousel/>
             <Routes location={location} key={location.pathname}>
                 <Route path='/' element={<Home />} />
              
