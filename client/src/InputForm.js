@@ -6,9 +6,10 @@ import { BiCheck } from 'react-icons/bi';
 import {BiCopy} from 'react-icons/bi'
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from 'uuid';
-const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandleSubmit, onHandleClipboard}) => {
+const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandleSubmit, onHandleClipboard, onHandleNavigate, onHandleTest}) => {
     const location = useLocation()
     const navigate = useNavigate()
+    const env = process.env.REACT_APP_ENV;
     const [phone, setPhone] = useState('')
     const [referralCount, setReferralCount] = useState(count?count:0)
   //  const [referral, setReferral] = useState(referralLink)
@@ -45,8 +46,8 @@ const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandle
             transition={{
                 type: "spring",
                 stiffness:160,
-                damping:40,
-                duration:.25,
+                damping:30,
+                duration:.2,
             }}
             className='input-form-container '>
             <div className='form-content'>
@@ -62,7 +63,7 @@ const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandle
                           //  pattern="^\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*$"
                             value={phone}
                             onChange={(e)=>validatePhone(e.target.value)}
-                            placeholder='+ 1' required/>
+                            placeholder='000-000-0000' required/>
                             <span type="submit" className={validNumber?'input-phone-button':'input-phone-button-alt'}
                             onClick={()=>validNumber?onRegisterPhone(phone):console.log(phone)}>
                                 <p className='phone-submit-text'>
@@ -107,12 +108,12 @@ const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandle
                        
                         <span className='input-wrapper'>
                             <span className='input-content-access'
-                            onClick={() =>(referralCount>=2)? handleNavigate():console.log("replace error status")}
+                            onClick={() =>onHandleNavigate()}
                             name="symbol">
                                 {`peakingduckgroup.com/snow-house`}
                             </span>
                             <span 
-                              onClick={() =>(referralCount>=2)? handleNavigate():console.log("replace error status")}
+                            onClick={() =>onHandleNavigate()}
                             className='access-arrow-icon-container'>
                                 <GoArrowRight 
                                  style={{color:referralCount<2?"#404040":"#eee"}}
@@ -121,18 +122,20 @@ const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandle
                         </span>
                     </div>
                 
-                {/*
+                {/*(env==="development")&&
                     <span className='submit-button' 
                     role='button'
                     type="submit"
+                    style={{position:"absolute", bottom:24}}
                     onClick={()=>onHandleSubmit(phone)}
+                   //onClick={()=>onHandleTest()}
                     >
                         <p className='submit-text'>
                             Debug
                         </p>
                         <GoArrowRight className="button-icon"/>
                     </span>
-                    */  }
+                    */}
                 </div>
             </div>
         

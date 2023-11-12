@@ -18,13 +18,16 @@ export default function Popup ({ status, onClose }) {
               damping: 20,
           }}
       >
-          <div className={`popup-wrapper ${status==="copied"||status==="registered"?"success":status}-wrapper`}>
+          <div className={`popup-wrapper ${status==="copied"||status==="registered"?"success":(status==="unfulfilled"||status==="unregistered")?"loading":
+          status}-wrapper`}>
             <div className="popup-text-container">
                 <p className={"popup-text"}>
                     {(status==="success")?'Response successfully received.':
                     (status==="loading")?"Processing request...":
                     (status==="copied")?"Copied to clipboard.":
                     (status==="registered")?"Contact already registered.":
+                    (status==="unfulfilled")?"Need at least 2 referrals!":
+                    (status==="unregistered")?"Please register your phone number.":
                     "An error occured."}
                 </p>
             </div>

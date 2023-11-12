@@ -6,8 +6,11 @@ import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import {motion, AnimatePresence} from 'framer-motion'
 import axios from 'axios'
 import Popup from './Popup';
+import {v4 as uuidv4} from 'uuid'
+import Confirmation from './Confirmation';
 
 function Home() {
+  const navigate = useNavigate()
   const location = useLocation()
   const [status, setStatus] = useState(false)
   const [phone, setPhone] = useState("")
@@ -16,15 +19,17 @@ function Home() {
   const [referralLink, setReferralLink] = useState("")
   const [accessLink, setAccessLink] = useState("")
   const [referralCount, setReferralCount] = useState(0)
+
   const env = process.env.REACT_APP_ENV
   const connection = process.env.REACT_APP_API_URL
+
+
   function closePopup() {
     setShouldPopup(false)
     setStatus('')
   }
-  function handleForm(data) {
-    setPhone(data)
-  }
+
+
   function handleTest() {
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get('token');
@@ -38,6 +43,18 @@ function Home() {
     }
     setStatus("copied")
   }
+  function handleNavigate() {
+    if (isRegistered) {
+      if (referralCount >= 2) {
+        navigate(`/access`, {state: {token:uuidv4()}})
+      } else {
+        setStatus("unfulfilled")
+      }
+    } else {
+      setStatus("unregistered")
+    }
+  }
+  // checks # of referrals after submitting a registered phone number
   const checkReferralCount = async(phone) => {
     try {
         const res = await axios.get(`${connection}/api/getreferralcount`,
@@ -105,13 +122,17 @@ function Home() {
         const res = await axios.post(`${connection}/api/send-sms`, {phone:phone})
         if (res.data) {
           console.log(res.data)
+          setStatus("success")
         } else {
           console.log("sms failed")
+          setStatus("error")
         }
       } catch(e) {
         console.log(e)
         setStatus("error")
       }
+    } else {
+      setStatus("unregistered")
     }
   }
   useEffect(()=> {  // for loading status bar
@@ -141,6 +162,15 @@ function Home() {
         duration:.6
       }
     }}>
+  
+      <div className='top-content-container'>
+        <p className='top-content-text'>
+          a peaking duck festival
+        </p>
+        <p className='top-content-header'>
+            "snow house"
+        </p>
+      </div>
       <div className='main-content-container'>
         <InputForm 
           referralLink={referralLink}
@@ -149,6 +179,8 @@ function Home() {
           onRegisterPhone={(val)=>checkRegistered(val)}
           onHandleSubmit={(phone)=>testSMS(phone)}
           onHandleClipboard={(type)=>handleClipboard(type)}
+          onHandleNavigate={()=>handleNavigate()}
+          onHandleTest={()=>handleTest()}
         />
       </div>
    

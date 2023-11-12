@@ -1,0 +1,40 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@300;400;500;600;700;800&display=swap');
+.confirmation-content-container {
+    min-width: 35%;
+    min-height: 50%;
+    max-width: 35%;
+    max-height: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+    border-radius: .875rem;
+    padding-left: 0rem;
+    padding-right: 0rem;
+    position: absolute;
+    z-index: 999;
+    margin: auto;
+    top: 0rem; bottom: 0; right: 0; left:0;
+    margin-left: auto;
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.confirmation-content-wrapper {
+    padding-top: 1rem;
+    display: flex;
+    flex-direction: column;
+    margin-left: auto;
+    margin-right: auto;
+    align-items: center;
+}
+.confirmation-test-text {
+    color:#0a0a0a;
+    text-align: center;
+    font-family: Inter;
+    z-index: 0;
+    font-size: clamp(12px, 3.5vw, 16px);
+    font-weight: 600;
+    line-height: normal;
+    text-transform: uppercase;
+}

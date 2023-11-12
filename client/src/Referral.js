@@ -5,15 +5,20 @@ import InputForm from './InputForm';
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import {motion, AnimatePresence} from 'framer-motion'
 import axios from 'axios'
+import {BiLink} from 'react-icons/bi'
 import Popup from './Popup';
+import {v4 as uuidv4} from 'uuid'
 
 function Referral() {
+  const navigate = useNavigate()
   const location = useLocation()
   const [status, setStatus] = useState(false)
   const [phone, setPhone] = useState("")
+  const [ownerPhone, setOwnerPhone] = useState('')
   const [isValid, setIsValid] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isRegistered, setIsRegistered] = useState(false)
+  const [showLink, setShowLink] = useState(false)
   const [shouldPopup, setShouldPopup] = useState(false)
   const [referralLink, setReferralLink] = useState("")
   const [accessLink, setAccessLink] = useState("")
@@ -24,8 +29,18 @@ function Referral() {
     setShouldPopup(false)
     setStatus('')
   }
-  function handleForm(data) {
-    setPhone(data)
+  function handleTest() {
+  }
+  function handleNavigate() {
+    if (isRegistered) {
+      if (referralCount >= 2) {
+        navigate(`/access`, {state: {token:uuidv4()}})
+      } else {
+        setStatus("unfulfilled")
+      }
+    } else {
+      setStatus("unregistered")
+    }
   }
   function handleTest() {
     const queryParams = new URLSearchParams(location.search);
@@ -121,6 +136,7 @@ function Referral() {
   const validateReferral = async(token, callback) => {
     const connection = process.env.REACT_APP_API_URL
     let validated = false;
+    let phone = ''
     try {
         const res = await axios.get(`${connection}/api/checkreferral`, {
         params:{
@@ -128,14 +144,16 @@ function Referral() {
         }})
         if (res.data && res.data[0].isValid) {
             validated = res.data[0].isValid
+            phone = res.data[0].phone
         } 
       } catch(e) {
         console.log(e)
         return false
       }
-      callback(validated)
+      callback(validated, phone)
       return validated
 };
+
 const testSMS = async(phone) => {
   if (isRegistered) {
     setStatus("loading")
@@ -143,13 +161,17 @@ const testSMS = async(phone) => {
       const res = await axios.post(`${connection}/api/send-sms`, {phone:phone})
       if (res.data) {
         console.log(res.data)
+        setStatus("success")
       } else {
         console.log("sms failed")
+        setStatus("error")
       }
     } catch(e) {
       console.log(e)
       setStatus("error")
     }
+  } else {
+    setStatus("unregistered")
   }
 }
 
@@ -168,9 +190,10 @@ const testSMS = async(phone) => {
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get('token'); 
     let tokenIsValid = false;
-    tokenIsValid = validateReferral(token, (valid) => {
+    tokenIsValid = validateReferral(token, (valid, phone) => {
         setIsValid(valid)
         setIsLoading(false)
+        setOwnerPhone(phone)
     });
     setIsValid(tokenIsValid)
     console.log(location)
@@ -191,7 +214,14 @@ const testSMS = async(phone) => {
         duration:.6,
      }
     }}>
-      <Carousel/>
+      <div className='top-content-container'>
+        <p className='top-content-text'>
+          a peaking duck festival
+        </p>
+        <p className='top-content-header'>
+            "snow house"
+        </p>
+      </div>
       <div className='main-content-container'>
         <InputForm 
           referralLink={referralLink}
@@ -200,8 +230,40 @@ const testSMS = async(phone) => {
           onRegisterPhone={(val)=>checkRegistered(val)}
           onHandleSubmit={(phone)=>testSMS(phone)}
           onHandleClipboard={(type)=>handleClipboard(type)}
+          onHandleNavigate={()=>handleNavigate()}
+          onHandleTest={()=>handleTest()}
         />
       </div>
+
+      <span className="referral-indicator"
+      onClick={()=>setShowLink(!showLink)}>
+        <BiLink className='link-icon'/>
+        <AnimatePresence>
+          {(ownerPhone.length>0)&&
+        <motion.div
+        initial={{width:0, x:12}}
+        animate={{width:(showLink)?"auto":0, x:(showLink)?-2:12}}
+        transition={{
+          type: "spring",
+          stiffness: 160,
+          damping: 30,
+    //      delay:.5,
+          duration:.25
+        }}
+        exit={{width:0, x:12, 
+        transition:{
+          type: "spring",
+          stiffness: 160,
+          damping: 30,
+        //  delay:.5,
+          duration:.25
+        }}}>
+         &nbsp;+1&nbsp;{`${ownerPhone.substring(0,3)}-${ownerPhone.substring(3,6)}-${ownerPhone.substring(6,10)}`}
+        </motion.div>
+        }
+        </AnimatePresence>
+       
+      </span>
    
       <AnimatePresence>     
         {(shouldPopup && status.length > 0)&&  // gives request status

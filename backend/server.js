@@ -8,6 +8,13 @@ const bodyParser = require('body-parser');
 const { v4: uuidv4 } = require('uuid');
 app.use(express.json())
 app.use(cors())
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const verifySid = process.env.VERIFY_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+
+const client = require('twilio')(accountSid, authToken);
+
 const db2 = mysql.createConnection({
     user: 'admin',
     host: 'referraldb.cxqytlywk8uc.us-west-1.rds.amazonaws.com',
@@ -45,7 +52,7 @@ app.get('/api/getlinks', (req,res)=> {
 })
 app.get('/api/checkreferral', (req, res) => {
     const referralToken = req.query.referralToken
-    db2.query('SELECT COUNT(referral_link) as isValid FROM users WHERE referral_link = ?',
+    db2.query('SELECT phone, COUNT(referral_link) as isValid FROM users WHERE referral_link = ?',
     [referralToken], (err, result) => {
         if (err) {
             console.log(err)
@@ -81,12 +88,13 @@ app.post('/api/createuser', (req, res) => {
     const userid = uuidv4()
     // gotta do input validation on phone numbers
     const phone = req.body.phone
+    const from = req.body.token
     const referral = uuidv4()
     var numb = phone.match(/\d/g);
     numb = numb.join("");
     // might wanna set `confirmed` here, after verifying phone thru twilio
-    const sql = `INSERT INTO users (userid, phone, referral_link) VALUES (?, ?, ?)`
-    db2.query(sql, [userid, numb, referral], (err, result) => {
+    const sql = `INSERT INTO users (userid, phone, referral_link, from) VALUES (?, ?, ?, ?)`
+    db2.query(sql, [userid, numb, referral, from], (err, result) => {
         if(err) {
             console.log(err)
         } else {
@@ -139,15 +147,25 @@ app.post('/api/countreferral', (req, res) => {
 
 })
 app.post('/api/send-sms', (req, res) => {
-    const to = req.body.phone
-    const code = uuidv4().substring(0,4)
-    const from = "8445900274";
+    const phone = req.body.phone
+    var numb = phone.match(/\d/g);
+    numb = numb.join("");
+    const to = `+1${numb}`
+    const code = Math.floor(100000 + Math.random() * 900000)
+    const from = "+18445900274";
     const body = `Reply with YES ${code}`;
-
+    const id = uuidv4()
     client.messages
       .create({ body, from, to })
       .then(message => res.send({ message: 'SMS sent', sid: message.sid }))
       .catch(error => res.status(500).send({ error }));
+    db2.query('INSERT INTO codes (codeid, code, phone) VALUES (?,?,?)', [id, code, numb], (err, result) => {
+        if (err) {
+            console.log(err)
+        } else {
+            res.send(result)
+        }
+    })
 });
 
 

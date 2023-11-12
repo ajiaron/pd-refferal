@@ -3,10 +3,19 @@ import React, {useState, useEffect, useRef} from 'react';
 import Carousel from './Carousel';
 import InputForm from './InputForm';
 import {motion, AnimatePresence, filterProps} from 'framer-motion'
+import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import axios from 'axios'
 import Popup from './Popup';
 
 const Posh = () => {
+    const location = useLocation()
+    function getReferralToken() {
+        const queryParams = new URLSearchParams(location.state);
+        return queryParams.get('token');
+    }
+    useEffect(()=> {
+        console.log(getReferralToken())
+    }, [])
     return (
         <motion.div className='posh-content' initial={{x:window.innerWidth}} 
         animate={{x:0}} 
@@ -61,23 +70,7 @@ const Posh = () => {
                      <div className="header-blur"/>
                      */}
                 </motion.div>
-          
-           
             </div>
-            
-            {/*
-            <>
-                <iframe
-                        src="https://embed.posh.vip/ticket-iframe/654acec46b783f693513aaac/"
-                        height='100%'
-                        width='100%'
-                        style={{border: "none"}}
-                    title="posh"
-                    className='posh-embed'
-                />
-            </>
-        */ }
-
         </motion.div>
     );
 }
