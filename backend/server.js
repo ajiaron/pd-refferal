@@ -167,7 +167,63 @@ app.post('/api/send-sms', (req, res) => {
         }
     })
 });
-
+app.get('/api/confirmcode', (req, res) => {
+    const phone = req.query.phone
+    const code = req.query.code
+    var numb = phone.match(/\d/g);
+    numb = numb.join("");
+    const sql = `SELECT COUNT(DISTINCT code) as valid FROM codes WHERE phone = ? AND code = ?`
+    const sql2 = `UPDATE users SET approved = true WHERE phone = ?`
+    db2.query(sql, [numb, code], (err, result) => {
+        if (err) {
+            console.log(err)
+        } else {
+            if (result[0].valid > 0) {
+                db2.query(sql2, [numb], (err, val) => {
+                    if (err) {
+                        console.log(err)
+                    } else {
+                        res.send(result)
+                    }
+                })
+            }
+            res.send(result)
+        }
+    })
+})
+app.get('/api/getapproved', (req, res)=> {
+    const phone = req.query.phone
+    var numb = phone.match(/\d/g);
+    numb = numb.join("");
+    db2.query(`SELECT approved FROM users WHERE phone = ?`, [numb], (err, result)=> {
+        if (err) {
+            console.log(err)
+        } else {
+            res.send(result)
+        }
+    })
+})
+app.post('/api/confirm-sms', (req, res) => {
+    const phone = req.body.phone
+    var numb = phone.match(/\d/g);
+    numb = numb.join("");
+    const to = `+1${numb}`
+    const code = Math.floor(100000 + Math.random() * 900000)
+    const from = "+18445900274";
+    const body = `Reply with YES ${code}`;
+    const id = uuidv4()
+    client.messages
+      .create({ body, from, to })
+      .then(message => res.send({ message: 'SMS sent', sid: message.sid }))
+      .catch(error => res.status(500).send({ error }));
+    db2.query('INSERT INTO codes (codeid, code, phone) VALUES (?,?,?)', [id, code, numb], (err, result) => {
+        if (err) {
+            console.log(err)
+        } else {
+            res.send(result)
+        }
+    })
+});
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Listening on port ${port}`))

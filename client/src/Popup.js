@@ -18,7 +18,8 @@ export default function Popup ({ status, onClose }) {
               damping: 20,
           }}
       >
-          <div className={`popup-wrapper ${status==="copied"||status==="registered"?"success":(status==="unfulfilled"||status==="unregistered")?"loading":
+          <div className={`popup-wrapper ${status==="copied"||status==="registered"||status==="code_sent"?"success":(status==="unfulfilled"||status==="unregistered")?"loading":
+          (status==="invalid_code")?"error":
           status}-wrapper`}>
             <div className="popup-text-container">
                 <p className={"popup-text"}>
@@ -28,11 +29,13 @@ export default function Popup ({ status, onClose }) {
                     (status==="registered")?"Contact already registered.":
                     (status==="unfulfilled")?"Need at least 2 referrals!":
                     (status==="unregistered")?"Please register your phone number.":
+                    (status==="invalid_code")?"Incorrect verification code.":
+                    (status==="code_sent")?"Confirmation code sent.":
                     "An error occured."}
                 </p>
             </div>
             <span className='exit-icon-container' onClick={()=>onClose()}>
-                {(status==='success'|| status==="copied" || status==="registered")?
+                {(status==='success'|| status==="copied" || status==="registered"|| status==="code_sent")?
                 <BsCheckLg className='exit-icon'/>:
                 (status==='loading')?
                 <BiTimeFive className='exit-icon'/>:

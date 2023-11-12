@@ -6,11 +6,12 @@ import { BiCheck } from 'react-icons/bi';
 import {BiCopy} from 'react-icons/bi'
 import { Link, useParams, useLocation, useNavigate } from "react-router-dom";
 import { v4 as uuidv4 } from 'uuid';
-const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandleSubmit, onHandleClipboard, onHandleNavigate, onHandleTest}) => {
+const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandleSubmit, onHandleClipboard, onHandleNavigate, onHandleTest, onConfirmCode}) => {
     const location = useLocation()
     const navigate = useNavigate()
     const env = process.env.REACT_APP_ENV;
     const [phone, setPhone] = useState('')
+    const [confirmationCode, setConfirmationCode] = useState("")
     const [referralCount, setReferralCount] = useState(count?count:0)
   //  const [referral, setReferral] = useState(referralLink)
   //  const [accessLink, setAccessLink] = useState(uuidv4())
@@ -54,7 +55,7 @@ const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandle
                 <div className='fields-container'> 
                     <div className='input-container'>
                         <p className='input-header-text'>
-                            Phone Number
+                        Enter in your phone number:
                         </p>
                         <div className='input-wrapper-alt'>
                             <input className='input-content'
@@ -72,12 +73,12 @@ const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandle
                             </span>
                         </div>
                     </div>
-                    <div className='input-container'>
-                        <p className='input-header-text'>
-                            Your Refferal Link
+                    <div className='input-container' style={{transform:"translateY(-1.25rem)"}}>
+                        <p className='input-header-text' style={{paddingBottom:".125rem", lineHeight:"26px"}}>
+                        Copy this link and send to TWO friends. When your friends click the link = 1 referral. Get 2 referrals, and gain access to 36.5% off tickets.
                         </p>
                         <span className='input-wrapper'>  
-                            <span className='input-content-alt'
+                            <span className='input-content-alt referral-input'
                             // replace this function with an add on that posts the link to db
                             onClick={() => onHandleClipboard("referral")}
                             name="symbol">
@@ -93,27 +94,30 @@ const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandle
                        
                         </span>
                     </div>
-                    <div className='input-container'>
-                        <div style={{display:"flex", width:"fit-content", alignItems:"center"}}>
-                        <p className='input-header-text'>
-                            {`Your Access Link ${(isRegistered&&referralCount>=2)?'• Ready to go ':
+                    <div className='input-container' style={{transform:"translateY(-.5rem)"}}>
+                        <div style={{ minWidth:"100%",display:"flex", width:"fit-content", alignItems:"center"}}>
+                        <p className='input-header-text' style={{paddingBottom:".125rem", lineHeight:"26px"}}>
+                        We’ll text you a confirmation code once you’re done.<br/> Enter it below and enjoy. {`${(isRegistered&&referralCount>=2)?'• Ready to go ':
                                 isRegistered&&referralCount<2?`• ${2-referralCount} more referral${referralCount<1?'s':''}`
-                            :""}`}
+                            :""}`
+                            }
+                        {(referralCount>=2)&&
+                        <BiCheck style={{ position:"absolute",color:"#fff", width:"1.35rem", height:"1.35rem", transform:"translateY(.1rem) translateX(.3rem)"}}/>
+                        }
                             
                         </p>
-                        {(referralCount>=2)&&
-                        <BiCheck style={{color:"#fff", width:"1.35rem", height:"1.35rem", marginLeft:".3rem", paddingBottom:".025rem"}}/>
-                        }
+
                         </div>
                        
                         <span className='input-wrapper'>
-                            <span className='input-content-access'
-                            onClick={() =>onHandleNavigate()}
-                            name="symbol">
-                                {`peakingduckgroup.com/snow-house`}
-                            </span>
+                   
+                            <input className='input-content-alt'
+                            value={confirmationCode}
+                            onChange={(e)=>setConfirmationCode(e.target.value)}
+                            placeholder='Enter your 6-digit code'/>
                             <span 
-                            onClick={() =>onHandleNavigate()}
+                  
+                            onClick={() =>onConfirmCode(phone, confirmationCode)}
                             className='access-arrow-icon-container'>
                                 <GoArrowRight 
                                  style={{color:referralCount<2?"#404040":"#eee"}}

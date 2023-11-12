@@ -21,6 +21,7 @@ function Referral() {
   const [showLink, setShowLink] = useState(false)
   const [shouldPopup, setShouldPopup] = useState(false)
   const [referralLink, setReferralLink] = useState("")
+  const [isApproved, setIsApproved] = useState(false)
   const [accessLink, setAccessLink] = useState("")
   const [referralCount, setReferralCount] = useState(0)
   const env = process.env.REACT_APP_ENV
@@ -55,6 +56,73 @@ function Referral() {
     }
     setStatus("copied")
   }
+
+  const checkApproved = async(phone) => {
+    try {
+      const res = await axios.get(`${connection}/api/getapproved`, {
+        params:{
+          phone:phone
+      }})
+      if (res.data) {
+        setIsApproved(res.data[0].approved)
+        if (res.data[0].approved === 0) {
+  // after submitting a phone # with 2 referrals, send a code if theyre not already approved
+          sendSMS(phone)
+        }
+      } else {  
+        console.log("not approved yet")
+      }
+    } catch(e) {
+      console.log(e)
+    //  setStatus("error")
+    }
+  }
+  const confirmCode = async(phone, code) => {
+
+      if (isRegistered) {
+        if (referralCount >= 2) {
+
+          setStatus("loading")
+          try {
+
+            const res = await axios.get(`${connection}/api/confirmcode`, {
+              params:{
+                phone:phone,
+                code:code
+              }
+            })
+            if (res.data && res.data[0].valid) {
+              setIsApproved(true)
+              handleNavigate()
+            } else {
+
+              // just in case the user presses back
+              const res = await axios.get(`${connection}/api/getapproved`, {
+                params:{
+                  phone:phone
+              }})
+              if (res.data && res.data[0].approved) {
+                handleNavigate()
+              } else {
+                setStatus("invalid_code")
+              }
+              // end of bypass
+        
+            }
+          } catch(e) {
+            console.log(e)
+            setStatus("error")
+          }
+        } else {
+          setStatus("unfulfilled")
+        }
+      } else {
+        setStatus("unregistered")
+      }
+    
+  }
+
+
   const checkReferralCount = async(phone) => {
     try {
         const res = await axios.get(`${connection}/api/getreferralcount`,
@@ -63,6 +131,9 @@ function Referral() {
         }})
         if (res.data) {
             setReferralCount(res.data[0].count)
+            if (res.data[0].count >= 2) {
+              checkApproved(phone)
+            }
         } else {
             console.log("couldnt find user")
         }
@@ -81,6 +152,7 @@ function Referral() {
         setStatus("registered")
         setIsRegistered(true)
         checkReferralCount(phone)
+     //   checkApproved(phone)
         // change this to actual name of site when done
         setReferralLink((env === "development")?
         `http://localhost:3000/referral?token=${res.data[0].referral}`:
@@ -154,14 +226,14 @@ function Referral() {
       return validated
 };
 
-const testSMS = async(phone) => {
+const sendSMS = async(phone) => {
   if (isRegistered) {
     setStatus("loading")
     try {
       const res = await axios.post(`${connection}/api/send-sms`, {phone:phone})
       if (res.data) {
         console.log(res.data)
-        setStatus("success")
+        setStatus("code_sent")
       } else {
         console.log("sms failed")
         setStatus("error")
@@ -221,6 +293,9 @@ const testSMS = async(phone) => {
         <p className='top-content-header'>
             "snow house"
         </p>
+        <p className='top-content-subtext'>
+            Get access to your discounted tickets below!
+        </p>
       </div>
       <div className='main-content-container'>
         <InputForm 
@@ -228,10 +303,11 @@ const testSMS = async(phone) => {
           count={referralCount}
           isRegistered={isRegistered}
           onRegisterPhone={(val)=>checkRegistered(val)}
-          onHandleSubmit={(phone)=>testSMS(phone)}
+          onHandleSubmit={(phone)=>sendSMS(phone)}
           onHandleClipboard={(type)=>handleClipboard(type)}
           onHandleNavigate={()=>handleNavigate()}
           onHandleTest={()=>handleTest()}
+          onConfirmCode={(phone, code)=> confirmCode(phone, code)}
         />
       </div>
 
@@ -257,7 +333,8 @@ const testSMS = async(phone) => {
           damping: 30,
         //  delay:.5,
           duration:.25
-        }}}>
+        }}}
+        className="link-text">
          &nbsp;+1&nbsp;{`${ownerPhone.substring(0,3)}-${ownerPhone.substring(3,6)}-${ownerPhone.substring(6,10)}`}
         </motion.div>
         }

@@ -18,6 +18,7 @@ function Home() {
   const [shouldPopup, setShouldPopup] = useState(false)
   const [referralLink, setReferralLink] = useState("")
   const [accessLink, setAccessLink] = useState("")
+  const [isApproved, setIsApproved] = useState(false)
   const [referralCount, setReferralCount] = useState(0)
 
   const env = process.env.REACT_APP_ENV
@@ -63,11 +64,77 @@ function Home() {
         }})
         if (res.data) {
             setReferralCount(res.data[0].count)
+            if (res.data[0].count >= 2) {
+              checkApproved(phone)
+            }
         } else {
             console.log("couldnt find user")
         }
     } catch(e) {
         console.log(e)
+    }
+  }
+
+  const checkApproved = async(phone) => {
+    try {
+      const res = await axios.get(`${connection}/api/getapproved`, {
+        params:{
+          phone:phone
+      }})
+      if (res.data) {
+        console.log("approved")
+        setIsApproved(true)
+        // after submitting a phone # with 2 referrals, send a code if theyre not already approved
+        if (res.data[0].approved === 0) {
+          // put in sms
+          sendSMS(phone)
+        }
+      } else {  
+        console.log("not approved yet")
+      }
+    } catch(e) {
+      console.log(e)
+    //  setStatus("error")
+    }
+  }
+  const confirmCode = async(phone, code) => {
+    if (isRegistered) {
+      if (referralCount >= 2) {
+        setStatus("loading")
+        try {
+          const res = await axios.get(`${connection}/api/confirmcode`, {
+            params:{
+              phone:phone,
+              code:code
+            }
+          })
+          if (res.data && res.data[0].valid) {
+            setIsApproved(true)
+            handleNavigate()
+          } else {
+
+              // just in case the user presses back
+              const res = await axios.get(`${connection}/api/getapproved`, {
+                params:{
+                  phone:phone
+              }})
+              if (res.data && res.data[0].approved) {
+                handleNavigate()
+              } else {
+                setStatus("invalid_code")
+              }
+              // end of bypass
+   
+          }
+        } catch(e) {
+          console.log(e)
+          setStatus("error")
+        }
+      } else {
+        setStatus("unfulfilled")
+      }
+    } else {
+      setStatus("unregistered")
     }
   }
   // call this when async storage is implemented on startup 
@@ -81,6 +148,8 @@ function Home() {
         setStatus("registered")
         setIsRegistered(true)
         checkReferralCount(phone)
+
+
         // change this to actual name of site when done
         setReferralLink((env === "development")?
         `http://localhost:3000/referral?token=${res.data[0].referral}`:
@@ -115,14 +184,14 @@ function Home() {
     }
   }
 
-  const testSMS = async(phone) => {
+  const sendSMS = async(phone) => {
     if (isRegistered) {
       setStatus("loading")
       try {
         const res = await axios.post(`${connection}/api/send-sms`, {phone:phone})
         if (res.data) {
           console.log(res.data)
-          setStatus("success")
+          setStatus("code_sent")
         } else {
           console.log("sms failed")
           setStatus("error")
@@ -165,10 +234,13 @@ function Home() {
   
       <div className='top-content-container'>
         <p className='top-content-text'>
-          a peaking duck festival
+            a peaking duck festival
         </p>
         <p className='top-content-header'>
             "snow house"
+        </p>        
+        <p className='top-content-subtext'>
+            Get access to your discounted tickets below!
         </p>
       </div>
       <div className='main-content-container'>
@@ -177,10 +249,12 @@ function Home() {
           count={referralCount}
           isRegistered={isRegistered}
           onRegisterPhone={(val)=>checkRegistered(val)}
-          onHandleSubmit={(phone)=>testSMS(phone)}
+          onHandleSubmit={(phone)=>sendSMS(phone)}
           onHandleClipboard={(type)=>handleClipboard(type)}
           onHandleNavigate={()=>handleNavigate()}
           onHandleTest={()=>handleTest()}
+          onConfirmCode={(phone, code)=> confirmCode(phone, code)}
+
         />
       </div>
    
