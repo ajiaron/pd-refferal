@@ -97,7 +97,7 @@ const InputForm = ({referralLink, count, isRegistered, onRegisterPhone, onHandle
                     <div className='input-container' style={{transform:"translateY(-.5rem)"}}>
                         <div style={{ minWidth:"100%",display:"flex", width:"fit-content", alignItems:"center"}}>
                         <p className='input-header-text' style={{paddingBottom:".125rem", lineHeight:"26px"}}>
-                        We’ll text you a confirmation code once you’re done.<br/> Enter it below and enjoy. {`${(isRegistered&&referralCount>=2)?'• Ready to go ':
+                        Resubmit your number, and we’ll text you a confirmation code once<br/> you’re done. Enter it below and enjoy. {`${(isRegistered&&referralCount>=2)?'• Ready to go ':
                                 isRegistered&&referralCount<2?`• ${2-referralCount} more referral${referralCount<1?'s':''}`
                             :""}`
                             }
