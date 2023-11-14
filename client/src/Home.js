@@ -19,7 +19,10 @@ function Home() {
   const [referralLink, setReferralLink] = useState("")
   const [accessLink, setAccessLink] = useState("")
   const [isApproved, setIsApproved] = useState(false)
+  const [hasShared, setHasShared] = useState(false)
   const [referralCount, setReferralCount] = useState(0)
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth)
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight)
 
   const env = process.env.REACT_APP_ENV
   const connection = process.env.REACT_APP_API_URL
@@ -30,19 +33,30 @@ function Home() {
     setStatus('')
   }
 
-
+  function onNavigate() {
+    navigate(`/access`, {state: {token:uuidv4()}})
+  }
   function handleTest() {
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get('token');
     console.log(token)
   }
   function handleClipboard(type) {
-    if (type === "referral") {
-        navigator.clipboard.writeText(`${referralLink}`)
+    if (navigator.share) {
+      navigator.share({
+        title: 'Refer a Friend',
+       // text: 'Get a promo discount on tickets.',
+        url: `${env==="development"?"http://localhost:3000":"https://peakingduck-referral.netlify.app"}`
+      })
+      .then(() =>  navigator.clipboard.writeText(`${env==="development"?"http://localhost:3000":"https://peakingduck-referral.netlify.app"}`))
+      .catch((error) => console.log('Error in sharing', error));
     } else {
-        navigator.clipboard.writeText(`https://peakingduckgroup.com/${accessLink}`)
-    }
-    setStatus("copied")
+      console.log('Web Share not supported');
+      // Implement fallback logic here
+        navigator.clipboard.writeText(`${env==="development"?"http://localhost:3000":"https://peakingduck-referral.netlify.app"}`)
+        setStatus("copied")
+      }
+    setHasShared(true)
   }
   function handleNavigate() {
     if (isRegistered) {
@@ -204,6 +218,27 @@ function Home() {
       setStatus("unregistered")
     }
   }
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth)
+      setWindowHeight(window.innerHeight)
+    };
+    if (windowWidth <= 480) {
+      document.body.style.overflow = 'auto';
+      document.documentElement.style.overflow = 'auto';
+    }
+   
+    // Handle window resize
+    window.addEventListener('resize', handleResize);
+
+    // Revert back to the original style and remove resize listener when the component unmounts
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
+
   useEffect(()=> {  // for loading status bar
     if (status.length>0) {
       setShouldPopup(true)
@@ -231,27 +266,49 @@ function Home() {
         duration:.6
       }
     }}>
+      {(windowWidth<480)&&
+      <div className='logo-container'>
+        <div className='peaking-duck-logo'/>
+      </div>
+      }
   
       <div className='top-content-container'>
         <p className='top-content-text'>
-            a peaking duck festival
+            the peaking duck festival
         </p>
         <p className='top-content-header'>
             "snow house"
         </p>        
-        <p className='top-content-subtext'>
-            Get access to your discounted tickets below!
+        <div style={{display:"flex", justifyContent:"center"}}>
+          {(windowWidth<480)?
+          <>
+        <p className='top-content-subtext' style={{display:"inline"}}>
+            Get access to
         </p>
+        <p className='top-content-subtext' style={{fontWeight:700, display:"inline", alignSelf:"center"}}>
+            &nbsp;50% off&nbsp;
+        </p>
+        <p className='top-content-subtext' style={{display:"inline"}}>
+            tickets
+        </p>
+        </>:
+        <p className='top-content-subtext'>
+          GET ACCESS TO YOUR DISCOUNTED TICKETS BELOW!
+        </p>
+        }
+        </div>
+      
       </div>
       <div className='main-content-container'>
         <InputForm 
           referralLink={referralLink}
           count={referralCount}
           isRegistered={isRegistered}
+          hasShared={hasShared}
           onRegisterPhone={(val)=>checkRegistered(val)}
           onHandleSubmit={(phone)=>sendSMS(phone)}
           onHandleClipboard={(type)=>handleClipboard(type)}
-          onHandleNavigate={()=>handleNavigate()}
+          onHandleNavigate={()=>onNavigate()}
           onHandleTest={()=>handleTest()}
           onConfirmCode={(phone, code)=> confirmCode(phone, code)}
 

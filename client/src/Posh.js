@@ -8,15 +8,51 @@ import axios from 'axios'
 import Popup from './Popup';
 
 const Posh = () => {
-    const location = useLocation()
-    function getReferralToken() {
-        const queryParams = new URLSearchParams(location.state);
-        return queryParams.get('token');
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth)
+  const [windowHeight, setWindowHeight] = useState(window.innerHeight)
+  //  const location = useLocation()
+  //  function getReferralToken() {
+  //      const queryParams = new URLSearchParams(location.state);
+  //      return queryParams.get('token');
+  //  }
+  //  useEffect(()=> {
+  //      console.log(getReferralToken())
+  //  }, [])
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth)
+  useEffect(() => {
+    const updateDimensions = () => {
+      setScreenWidth(window.innerWidth);
+    };
+    window.addEventListener('resize', updateDimensions);
+    return () => {
+      window.removeEventListener('resize', updateDimensions);
+    };
+  }, []);
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth)
+      setWindowHeight(window.innerHeight)
+    };
+  
+    // Apply overflow hidden when the component mounts
+    if (windowWidth <= 480) {
+      document.body.style.overflow = 'hidden';
+      document.documentElement.style.overflow = 'hidden';
     }
-    useEffect(()=> {
-        console.log(getReferralToken())
-    }, [])
+   
+
+    // Handle window resize
+    window.addEventListener('resize', handleResize);
+
+    // Revert back to the original style and remove resize listener when the component unmounts
+    return () => {
+      document.body.style.overflow = '';
+      document.documentElement.style.overflow = '';
+      window.removeEventListener('resize', handleResize);
+    };
+  }, []);
     return (
+
         <motion.div className='posh-content' initial={{x:window.innerWidth}} 
         animate={{x:0}} 
         transition={{
@@ -26,7 +62,9 @@ const Posh = () => {
             duration:.25,
            
           }}
+        style={{minHeight:(windowWidth>=480?"100vh":windowHeight)}}
        >
+        {(screenWidth>=480)?
             <div className='posh-content-container'>
                 <div className='posh-content-wrapper'>
                 <>
@@ -38,7 +76,7 @@ const Posh = () => {
                     title="posh"
                     className='posh-embed'
                 />
-            </>
+                </>
                 </div>
           
                 <motion.div 
@@ -70,8 +108,30 @@ const Posh = () => {
                      <div className="header-blur"/>
                      */}
                 </motion.div>
-            </div>
+        
+            </div>:
+   
+
+            <>
+            <iframe
+                    src="https://embed.posh.vip/ticket-iframe/654acec46b783f693513aaac/"
+                    height={`${windowHeight}px`}
+                    width='100%'
+                    style={{border: "none", paddingTop:"1.5rem"}}
+                title="posh"
+                className='posh-embed'
+            />
+          </>
+
+
+     
+
+                    
+      
+            }
+
         </motion.div>
+
     );
 }
 
