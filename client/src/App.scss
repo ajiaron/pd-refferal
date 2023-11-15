@@ -193,8 +193,8 @@ iframe {
  display: flex;
   align-items: center;
   justify-content: center;
-padding-top: 5rem;
-
+  display: flex;
+  padding-top: 10rem;
  
 }
 
@@ -478,8 +478,8 @@ input:focus, textarea {
  
 }
 .logo-container {
-  min-height: 9rem;
-  max-height: 9rem;
+  min-height: 9.5rem;
+  max-height: 9.5rem;
   min-width: 100%;
   max-width: 100%;
   display: flex;
@@ -489,10 +489,10 @@ input:focus, textarea {
  // padding-top: 3rem;
 }
 .peaking-duck-logo {
-  min-height: 6rem;
-  max-height: 6rem;
-  min-width:6rem;
-  max-width: 6rem;
+  min-height: 6.25rem;
+  max-height: 6.25rem;
+  min-width:6.25rem;
+  max-width: 6.25rem;
   background-repeat: no-repeat;
   background-size: cover;
   margin-left: auto;
@@ -657,7 +657,7 @@ input:focus, textarea {
   html, body {
     height: 100%;
     margin: 0;
-    overflow: hidden; /* Prevents scroll on body */
+  //  overflow: hidden; /* Prevents scroll on body */
   }
   
   body {
@@ -665,7 +665,7 @@ input:focus, textarea {
   }
   .main-content {
     overflow-x: hidden;
-    justify-content: center;
+    justify-content: flex-start;
 
   }
 
@@ -1005,7 +1005,7 @@ input:focus, textarea {
   z-index: 1000;
   overflow-y: scroll;
   //position: relative;
- // min-height: 100vh;
+  min-height: 100vh;
 
 
 
@@ -1044,9 +1044,9 @@ iframe {
   //top: 50%;
   //left: 50%;
   
-  //transform: translate(-50%, -50%);
+ // transform: translate(-50%, -50%);
   width: 100%;  /* Adjust as necessary */
-  height: fit-content; /* Adjust as necessary */
+  height: 100vh; /* Adjust as necessary */
   border: none;
 
 //  background-color: red;

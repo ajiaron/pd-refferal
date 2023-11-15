@@ -17,8 +17,8 @@ const client = require('twilio')(accountSid, authToken);
 
 const db2 = mysql.createConnection({
     user: 'admin',
-    host: 'referraldb.cxqytlywk8uc.us-west-1.rds.amazonaws.com',
-    password: 'Claypot123!',
+    host: process.env.RDS_INSTANCE,
+    password: process.env.RDS_INSTANCE_PASS,
     charset: 'utf8mb4',
     database: 'referralDB',
 });

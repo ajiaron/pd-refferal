@@ -36,8 +36,10 @@ const Posh = () => {
   
     // Apply overflow hidden when the component mounts
     if (windowWidth <= 480) {
-      document.body.style.overflow = 'hidden';
-      document.documentElement.style.overflow = 'hidden';
+      document.body.style.overflow = 'auto';
+      document.documentElement.style.overflow = 'auto';
+     // document.body.style.overflow = 'hidden';
+     // document.documentElement.style.overflow = 'hidden';
     }
    
 
@@ -46,8 +48,7 @@ const Posh = () => {
 
     // Revert back to the original style and remove resize listener when the component unmounts
     return () => {
-      document.body.style.overflow = '';
-      document.documentElement.style.overflow = '';
+
       window.removeEventListener('resize', handleResize);
     };
   }, []);
@@ -62,7 +63,7 @@ const Posh = () => {
             duration:.25,
            
           }}
-        style={{minHeight:(windowWidth>=480?"100vh":windowHeight)}}
+        style={{minHeight:(windowWidth>=480?"100vh":"100vh")}}
        >
         {(screenWidth>=480)?
             <div className='posh-content-container'>
